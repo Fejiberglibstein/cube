@@ -1,3 +1,4 @@
+export const src = `
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
@@ -48,3 +49,4 @@
      d="M 97.901438,84.76159 49.022553,56.591705 0.09998999,84.83716 48.978937,113.00692 Z"
      id="00" />
 </svg>
+`
