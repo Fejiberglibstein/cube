@@ -15,7 +15,7 @@ import {
 	useRandom,
 	waitFor,
 } from "@motion-canvas/core";
-import { src } from "../images/cubies";
+import { data } from "../images/cubies";
 
 export default makeScene2D(function* (view) {
 	const random = useRandom(13);
@@ -27,59 +27,60 @@ export default makeScene2D(function* (view) {
 	const colors = ["purple", "blue", "green", "yellow", "orange", "red"];
 	view.add(
 		<>
-			<Rect ref={lines}> layout={false} </Rect>
-			<SVG svg={src} ref={svg} scale={0.8} layout={false}></SVG>
+			{data.map((v) => (
+				<Path data={v} stroke={"white"} lineWidth={3} lineJoin={"round"} ></Path>
+			))}
 		</>
 	);
-	svg().y(view.height() / 2 - (svg().height() * svg().scale().y) / 2 - 20);
+	// svg().y(view.height() / 2 - (svg().height() * svg().scale().y) / 2 - 20);
 
-	const wrapper = svg().children()[0];
-	const faceHeight = Math.sqrt(
-		svg().height() * svg().height() + svg().width() * svg().width()
-	);
+	// const wrapper = svg().children()[0];
+	// const faceHeight = Math.sqrt(
+	// 	svg().height() * svg().height() + svg().width() * svg().width()
+	// );
 
-	wrapper.children().forEach((child, i) => {
-		heightSignals.push(createSignal<number>(1));
-		if (child instanceof Path) {
-			child.stroke("white");
-			child.lineWidth(3);
-			child.lineJoin("round");
-			lines().add(
-				<Layout
-					spawner={range(heightSignals[i]()).map((v) => (
-						<Path
-							data={child.data}
-							fill={"green"}
-							layout
-							></Path>
-							))}
-							position={[0, initialY[i] - linear(0.8, 0, faceHeight)]}
-					scale={2}
-					layout={false}
-				></Layout>
-			);
+	// wrapper.children().forEach((child, i) => {
+	// 	heightSignals.push(createSignal<number>(1));
+	// 	if (child instanceof Path) {
+	// 		child.stroke("white");
+	// 		child.lineWidth(3);
+	// 		child.lineJoin("round");
+	// 		lines().add(
+	// 			<Layout
+	// 				spawner={range(heightSignals[i]()).map((v) => (
+	// 					<Path
+	// 						data={child.data}
+	// 						fill={"green"}
+	// 						layout
+	// 						></Path>
+	// 						))}
+	// 						position={[0, initialY[i] - linear(0.8, 0, faceHeight)]}
+	// 				scale={2}
+	// 				layout={false}
+	// 			></Layout>
+	// 		);
 
-			cubies.push(child);
-			initialY.push(child.y());
-		}
-	});
-	yield* all(
-		waitFor(1),
-		...wrapper.children().map((path, i) => {
-			const delay = random.nextFloat(0, 0.3);
-			const duration = random.nextFloat(0.25, 0.6);
-			return all(
-				chain(
-					waitFor(linear(delay)),
-					path.y(-path.y() - faceHeight, duration, easeOutBack)
-				),
-				chain(
-					heightSignals[i](faceHeight, duration / 2)
-					// heightSignals[i](0, duration /2)
-				)
-			);
-		})
-	);
+	// 		cubies.push(child);
+	// 		initialY.push(child.y());
+	// 	}
+	// });
+	// yield* all(
+	// 	waitFor(1),
+	// 	...wrapper.children().map((path, i) => {
+	// 		const delay = random.nextFloat(0, 0.3);
+	// 		const duration = random.nextFloat(0.25, 0.6);
+	// 		return all(
+	// 			chain(
+	// 				waitFor(linear(delay)),
+	// 				path.y(-path.y() - faceHeight, duration, easeOutBack)
+	// 			),
+	// 			chain(
+	// 				heightSignals[i](faceHeight, duration / 2)
+	// 				// heightSignals[i](0, duration /2)
+	// 			)
+	// 		);
+	// 	})
+	// );
 });
 
 function getCubieLocation(index: number) {
