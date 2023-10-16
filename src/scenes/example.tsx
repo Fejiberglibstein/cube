@@ -42,7 +42,7 @@ export default makeScene2D(function* (view) {
   );
   const lines = createRef<Layout>();
   const blurAmount = 60;
-  let faceHeight: number = 228.54559548735617; // Pre-calculated
+  let faceHeight: number = 195.89622470344813 // Pre-calculated
   const blurs = paths.map((v, i) => {
     const bbox = new Path({data: v}).cacheBBox();
     heightsTop().push(createSignal(0));
@@ -90,7 +90,8 @@ export default makeScene2D(function* (view) {
   const bbox = wrapper().cacheBBox;
   faceHeight =
     Math.sqrt(bbox().height * bbox().height + bbox().width * bbox().width) /
-    1.5;
+    1.75;
+		debug(faceHeight);
   yield* waitFor(0.5);
   yield* all(
     ...cubies.map((cubie, i) => {
