@@ -44,6 +44,9 @@ const lineResolution = 60; // Lower number means you can see each individual squ
 
 export default makeScene2D(function* (view) {
 	const random = useRandom();
+
+	// Array of numbers for the start and end indices of the list of squares given by `blurs`
+	// Each index in the list correpsonds to the index from the list of squares
 	const heightsTop: SimpleSignal<SimpleSignal<number>[]> = createSignal(
 		new Array<SimpleSignal<number>>()
 	);
@@ -51,39 +54,51 @@ export default makeScene2D(function* (view) {
 		new Array<SimpleSignal<number>>()
 	);
 
-	const cubies = createRefArray<Path>();
+	const topSide = createRefArray<Path>();
 	const leftSide = createRefArray<Path>();
 	const rightSide = createRefArray<Path>();
 	const octagon = createRef<Polygon>();
-	const [wrapper, side] = [cubies, leftSide, rightSide].map((ref) => (
-		<Layout>
-			{paths.map((v, i) => (
-				<Path
-					data={v}
-					stroke={"white"}
-					lineWidth={3}
-					lineJoin={"round"}
-					fill={{ r: 19, g: 19, b: 21, a: 1 }}
-					zIndex={getZIndex(i)}
-					ref={ref}
-				></Path>
-			))}
-		</Layout>
-	) as Layout);
+
+	// Generate 3 Layouts containing all of the paths.
+	const [wrapper] = [topSide, leftSide, rightSide].map(
+		(ref) =>
+			(
+				<Layout>
+					{paths.map((v, i) => (
+						<Path
+							data={v}
+							stroke={"white"}
+							lineWidth={3}
+							lineJoin={"round"}
+							fill={{ r: 19, g: 19, b: 21, a: 1 }}
+							zIndex={getZIndex(i)}
+							ref={ref}
+						></Path>
+					))}
+				</Layout>
+			) as Layout
+	);
+
+	// Get the length of the edge of the entire cube face
 	const bbox = wrapper.cacheBBox();
 	const faceHeight = Math.sqrt(
 		((bbox.height / 2) * bbox.height) / 2 + ((bbox.width / 2) * bbox.width) / 2
 	);
 
+	// Create a list of multiple paths containing `lineResolution` amount of paths.
+	// Each path has a slightly different y coord so that they are stacked on top of each other
 	const blurs = paths.map((v, i) => {
-		const bbox = new Path({ data: v }).cacheBBox();
+		// Fill the lists heightsTop and heightsBottom with signals of 0.
 		heightsTop().push(createSignal(0));
 		heightsBottom().push(createSignal(0));
-		const refs = createRefArray<Path>();
+
+		// Get a bbox for the path
+		const bbox = new Path({ data: v }).cacheBBox();
+
+		// Generate a "tower" of the paths stacked atop each other spanning from y=0 to y=faceHeight
 		return range(lineResolution).map((height, j) => (
 			<Path
 				zIndex={-1}
-				ref={refs}
 				data={v}
 				fill={getGradient(
 					i,
@@ -99,7 +114,7 @@ export default makeScene2D(function* (view) {
 	view.add(
 		<>
 			<Layout y={faceHeight / 2}>
-				{cubies.map((v, i) => v)}
+				{topSide.map((v, i) => v)}
 				{paths.map((v, i) => (
 					<Path
 						zIndex={getZIndex(i) - 1}
@@ -116,17 +131,19 @@ export default makeScene2D(function* (view) {
 			<Polygon
 				ref={octagon}
 				sides={6}
-				fill={new Gradient({
-					type: 'linear',
-					fromX: -100,
-					toX: 100,
-					stops: [
-						{offset: 0,   color: "#333"},
-						{offset: 0.5, color: "#333"},
-						{offset: 0.5, color: "#222"},
-						{offset: 1,   color: "#222"}
-					]
-				})}
+				fill={
+					new Gradient({
+						type: "linear",
+						fromX: -100,
+						toX: 100,
+						stops: [
+							{ offset: 0, color: "#333" },
+							{ offset: 0.5, color: "#333" },
+							{ offset: 0.5, color: "#222" },
+							{ offset: 1, color: "#222" },
+						],
+					})
+				}
 				size={faceHeight * 2}
 				zIndex={-2}
 				opacity={0}
@@ -136,14 +153,16 @@ export default makeScene2D(function* (view) {
 			</Polygon>
 		</>
 	);
-	const logger = useLogger()
+
 	yield* waitFor(0.5);
 	yield* all(
 		delay(0.48, octagon().opacity(1, 0.2)),
-		...cubies.map((cubie, i) => {
+		...topSide.map((cubie, i) => {
+			// Random delay/duration for each cubie
 			let delay = random.nextFloat(0, 0.3);
 			let duration = random.nextFloat(0.3, 0.6);
 
+			// Each cubie gets a delay based on its z index
 			delay = getZIndex(i) / 24;
 			duration = 0.55;
 			return chain(
