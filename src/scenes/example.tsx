@@ -20,8 +20,10 @@ import {
 	createSignal,
 	debug,
 	delay,
+	easeInOutQuad,
 	easeOutBack,
 	easeOutExpo,
+	linear,
 	range,
 	sequence,
 	useLogger,
@@ -88,7 +90,7 @@ export default makeScene2D(function* (view) {
 				fill={getGradient(
 					i,
 					bbox,
-					Color.lerp("#704cad", "1d3461", height / lineResolution, "rgb")
+					Color.lerp("#7948cd", "173e89", height / lineResolution, "rgb")
 				)}
 				lineJoin={"round"}
 				y={-faceHeight * (height / lineResolution)}
@@ -97,7 +99,7 @@ export default makeScene2D(function* (view) {
 	});
 
 	view.add(
-		<>
+		<Layout scale={2}>
 			<Layout y={faceHeight / 2}>
 				{cubies.map((v, i) => v)}
 				{paths.map((v, i) => (
@@ -131,15 +133,15 @@ export default makeScene2D(function* (view) {
 				zIndex={-2}
 				opacity={0}
 			>
-				{/* <Layout position={[-faceHeight / 2.35, faceHeight / 4.2]} rotation={60}>{leftSide.map((v, i) => v)}</Layout>
-				<Layout position={[faceHeight / 2.35, faceHeight / 4.2]} rotation={-60}>{rightSide.map((v, i) => v)}</Layout> */}
+				<Layout position={[-faceHeight / 2.35, faceHeight / 4.2]} rotation={60}>{leftSide.map((v, i) => v)}</Layout>
+				<Layout position={[faceHeight / 2.35, faceHeight / 4.2]} rotation={-60}>{rightSide.map((v, i) => v)}</Layout>
 			</Polygon>
-		</>
+		</Layout>
 	);
 	const logger = useLogger()
 	yield* waitFor(0.5);
 	yield* all(
-		delay(0.48, octagon().opacity(1, 0.2)),
+		delay(0.6, octagon().opacity(1, 0.2)),
 		...cubies.map((cubie, i) => {
 			let delay = random.nextFloat(0, 0.3);
 			let duration = random.nextFloat(0.3, 0.6);
@@ -149,14 +151,12 @@ export default makeScene2D(function* (view) {
 			return chain(
 				waitFor(delay),
 				all(
-					cubie.y(-cubie.y() - faceHeight, duration, easeOutBack),
-					cubie
-						.fill("#dddddd", duration, easeOutBackVelocity)
-						.to({ r: 19, g: 19, b: 21, a: 1 }, 0),
+					cubie.y(-cubie.y() - faceHeight, duration, easeInOutQuad),
+					cubie.fill("#fff", 0.8, linear),
 					sequence(
 						duration * 0.58,
-						heightsTop()[i](lineResolution, duration, easeOutBack),
-						heightsBottom()[i](lineResolution, duration, easeOutBack)
+						heightsTop()[i](lineResolution, duration, easeInOutQuad),
+						heightsBottom()[i](lineResolution, duration, easeInOutQuad)
 					)
 				)
 			);
