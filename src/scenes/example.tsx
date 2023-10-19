@@ -3,14 +3,11 @@ import {
 	Layout,
 	Path,
 	Polygon,
-	Shape,
-	interpolation,
 	makeScene2D,
 } from "@motion-canvas/2d";
 import {
 	BBox,
 	Color,
-	DEFAULT,
 	PossibleColor,
 	SimpleSignal,
 	all,
@@ -18,13 +15,10 @@ import {
 	createRef,
 	createRefArray,
 	createSignal,
-	debug,
 	delay,
 	easeOutBack,
-	easeOutExpo,
 	range,
 	sequence,
-	useLogger,
 	useRandom,
 	waitFor,
 } from "@motion-canvas/core";
@@ -93,7 +87,7 @@ export default makeScene2D(function* (view) {
 		heightsBottom().push(createSignal(0));
 
 		// Get a bbox for the path
-		const bbox = new Path({ data: v }).cacheBBox();
+		const bbox = new Path({ data: v }).cacheBBox(); 
 
 		// Generate a "tower" of the paths stacked atop each other spanning from y=0 to y=faceHeight
 		return range(lineResolution).map((height, j) => (
@@ -103,7 +97,7 @@ export default makeScene2D(function* (view) {
 				fill={getGradient(
 					i,
 					bbox,
-					Color.lerp("#704cad", "1d3461", height / lineResolution, "rgb")
+					Color.lerp("#704cad", "#1C3D80", height / lineResolution, "rgb")
 				)}
 				lineJoin={"round"}
 				y={-faceHeight * (height / lineResolution)}
@@ -112,7 +106,7 @@ export default makeScene2D(function* (view) {
 	});
 
 	view.add(
-		<>
+		<Layout scale={2}>
 			<Layout y={faceHeight / 2}>
 				{topSide.map((v, i) => v)}
 				{paths.map((v, i) => (
@@ -148,10 +142,14 @@ export default makeScene2D(function* (view) {
 				zIndex={-2}
 				opacity={0}
 			>
-				{/* <Layout position={[-faceHeight / 2.35, faceHeight / 4.2]} rotation={60}>{leftSide.map((v, i) => v)}</Layout>
-				<Layout position={[faceHeight / 2.35, faceHeight / 4.2]} rotation={-60}>{rightSide.map((v, i) => v)}</Layout> */}
+				<Layout position={[-faceHeight / 2.35, faceHeight / 4.2]} rotation={60}>
+					{leftSide.map((v, i) => v)}
+				</Layout>
+				<Layout position={[faceHeight / 2.35, faceHeight / 4.2]} rotation={-60}>
+					{rightSide.map((v, i) => v)}
+				</Layout>
 			</Polygon>
-		</>
+		</Layout>
 	);
 
 	yield* waitFor(0.5);
@@ -175,19 +173,13 @@ export default makeScene2D(function* (view) {
 					sequence(
 						duration * 0.58,
 						heightsTop()[i](lineResolution, duration, easeOutBack),
-						heightsBottom()[i](lineResolution, duration, easeOutBack)
+						heightsBottom()[i](lineResolution, duration * 0.8, easeOutBack)
 					)
 				)
 			);
 		})
 	);
 });
-
-function getCubieLocation(index: number) {
-	const x = (index % 3) - 1;
-	const y = Math.floor(index / 3) - 1;
-	return { x: x, y: y };
-}
 
 function getZIndex(index: number) {
 	return [6, 4, 2, 8, 6, 4, 10, 8, 6][index];
@@ -196,8 +188,7 @@ function getZIndex(index: number) {
 function getGradient(index: number, bbox: BBox, color: PossibleColor) {
 	const c = new Color(color);
 	const c_dark = c.darken(0.8);
-	const c_darker = c.darken(1.2);
-	const c_light = c.darken(5);
+	const c_light = c.brighten(0.5);
 
 	const x = bbox.center.x;
 	const width = bbox.width / 2;
@@ -268,6 +259,7 @@ function getGradient(index: number, bbox: BBox, color: PossibleColor) {
 	});
 }
 
+// Derivative of easeOutBack easing function
 function easeOutBackVelocity(x: number): number {
 	const c1 = 1.70158;
 	const c3 = 1 + c1;
